@@ -28,7 +28,7 @@ use serde::{Serialize, Deserialize};
 #[cfg(feature = "std")]
 use sp_core::bytes;
 
-use polkadot_core_primitives::Hash;
+use polkadot_core_primitives::{Hash, OutboundHrmpMessage};
 
 /// Block number type used by the relay chain.
 pub use polkadot_core_primitives::BlockNumber as RelayChainBlockNumber;
@@ -215,6 +215,16 @@ impl sp_std::convert::TryFrom<u8> for ParachainDispatchOrigin {
 	}
 }
 
+/// A type that uniquely identifies an HRMP channel. An HRMP channel is unidirectional
+#[derive(Clone, PartialEq, Eq, Encode, Decode)]
+#[cfg_attr(feature = "std", derive(Debug, Hash))]
+pub struct HrmpChannelId {
+	/// The para that acts as the sender in this channel.
+	pub sender: Id,
+	/// The para that acts as the recipient in this channel.
+	pub recipient: Id,
+}
+
 /// An opaque byte buffer that encodes an entrypoint and the arguments that should be
 /// provided to it upon the dispatch.
 ///
@@ -263,6 +273,8 @@ pub struct ValidationResult {
 	pub new_validation_code: Option<ValidationCode>,
 	/// Upward messages send by the Parachain.
 	pub upward_messages: Vec<UpwardMessage>,
+	/// Outbound horizontal messages sent by the parachain.
+	pub horizontal_messages: Vec<OutboundHrmpMessage<Id>>,
 	/// Number of downward messages that were processed by the Parachain.
 	///
 	/// It is expected that the Parachain processes them from first to last.
